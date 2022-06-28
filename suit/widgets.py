@@ -1,9 +1,9 @@
-from django.contrib.admin.widgets import AdminTimeWidget, AdminDateWidget
-from django.forms import TextInput, Select, Textarea
-from django.utils.safestring import mark_safe
 from django import forms
+from django.contrib.admin import static
+from django.contrib.admin.widgets import AdminDateWidget, AdminTimeWidget
+from django.forms import Select, Textarea, TextInput
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
-from django.contrib.admin.templatetags.admin_static import static
 
 from suit import utils
 
@@ -15,7 +15,8 @@ class NumberInput(TextInput):
     HTML5 Number input
     Left for backwards compatibility
     """
-    input_type = 'number'
+
+    input_type = "number"
 
 
 class HTML5Input(TextInput):
@@ -26,7 +27,7 @@ class HTML5Input(TextInput):
 
     def __init__(self, attrs=None, input_type=None):
         self.input_type = input_type
-        super(HTML5Input, self).__init__(attrs)
+        super().__init__(attrs)
 
 
 #
@@ -37,7 +38,7 @@ class LinkedSelect(Select):
 
     def __init__(self, attrs=None, choices=()):
         attrs = _make_attrs(attrs, classes="linked-select")
-        super(LinkedSelect, self).__init__(attrs, choices)
+        super().__init__(attrs, choices)
 
 
 class EnclosedInput(TextInput):
@@ -51,7 +52,7 @@ class EnclosedInput(TextInput):
         """
         self.prepend = prepend
         self.append = append
-        super(EnclosedInput, self).__init__(attrs=attrs)
+        super().__init__(attrs=attrs)
 
     def enclose_value(self, value):
         """
@@ -65,22 +66,23 @@ class EnclosedInput(TextInput):
 
     def render(self, name, value, attrs=None, renderer=None):
         if django_version < (2, 0):
-            output = super(EnclosedInput, self).render(name, value, attrs)
+            output = super().render(name, value, attrs)
         else:
-            output = super(EnclosedInput, self).render(name, value, attrs, renderer)
+            output = super().render(name, value, attrs, renderer)
 
         div_classes = []
         if self.prepend:
-            div_classes.append('input-prepend')
+            div_classes.append("input-prepend")
             self.prepend = self.enclose_value(self.prepend)
-            output = ''.join((self.prepend, output))
+            output = "".join((self.prepend, output))
         if self.append:
-            div_classes.append('input-append')
+            div_classes.append("input-append")
             self.append = self.enclose_value(self.append)
-            output = ''.join((output, self.append))
+            output = "".join((output, self.append))
 
         return mark_safe(
-            '<div class="%s">%s</div>' % (' '.join(div_classes), output))
+            '<div class="{}">{}</div>'.format(" ".join(div_classes), output)
+        )
 
 
 class AutosizedTextarea(Textarea):
@@ -90,7 +92,7 @@ class AutosizedTextarea(Textarea):
 
     def __init__(self, attrs=None):
         new_attrs = _make_attrs(attrs, {"rows": 2}, "autosize")
-        super(AutosizedTextarea, self).__init__(new_attrs)
+        super().__init__(new_attrs)
 
     @property
     def media(self):
@@ -98,13 +100,14 @@ class AutosizedTextarea(Textarea):
 
     def render(self, name, value, attrs=None, renderer=None):
         if django_version < (2, 0):
-            output = super(AutosizedTextarea, self).render(name, value, attrs)
+            output = super().render(name, value, attrs)
         else:
-            output = super(AutosizedTextarea, self).render(name, value, attrs, renderer)
+            output = super().render(name, value, attrs, renderer)
 
         output += mark_safe(
             "<script type=\"text/javascript\">Suit.$('#id_%s').autosize();</script>"
-            % name)
+            % name
+        )
         return output
 
 
@@ -113,36 +116,36 @@ class AutosizedTextarea(Textarea):
 #
 class SuitDateWidget(AdminDateWidget):
     def __init__(self, attrs=None, format=None):
-        defaults = {'placeholder': _('Date:')[:-1]}
+        defaults = {"placeholder": _("Date:")[:-1]}
         new_attrs = _make_attrs(attrs, defaults, "vDateField input-small")
-        super(SuitDateWidget, self).__init__(attrs=new_attrs, format=format)
+        super().__init__(attrs=new_attrs, format=format)
 
     def render(self, name, value, attrs=None, renderer=None):
         if django_version < (1, 11):
-            output = super(SuitDateWidget, self).render(name, value, attrs)
+            output = super().render(name, value, attrs)
         else:
-            output = super(SuitDateWidget, self).render(name, value, attrs, renderer)
+            output = super().render(name, value, attrs, renderer)
         return mark_safe(
             '<div class="input-append suit-date">%s<span '
-            'class="add-on"><i class="icon-calendar"></i></span></div>' %
-            output)
+            'class="add-on"><i class="icon-calendar"></i></span></div>' % output
+        )
 
 
 class SuitTimeWidget(AdminTimeWidget):
     def __init__(self, attrs=None, format=None):
-        defaults = {'placeholder': _('Time:')[:-1]}
+        defaults = {"placeholder": _("Time:")[:-1]}
         new_attrs = _make_attrs(attrs, defaults, "vTimeField input-small")
-        super(SuitTimeWidget, self).__init__(attrs=new_attrs, format=format)
+        super().__init__(attrs=new_attrs, format=format)
 
     def render(self, name, value, attrs=None, renderer=None):
         if django_version < (2, 0):
-            output = super(SuitTimeWidget, self).render(name, value, attrs)
+            output = super().render(name, value, attrs)
         else:
-            output = super(SuitTimeWidget, self).render(name, value, attrs, renderer)
+            output = super().render(name, value, attrs, renderer)
         return mark_safe(
             '<div class="input-append suit-date suit-time">%s<span '
-            'class="add-on"><i class="icon-time"></i></span></div>' %
-            output)
+            'class="add-on"><i class="icon-time"></i></span></div>' % output
+        )
 
 
 class SuitSplitDateTimeWidget(forms.SplitDateTimeWidget):
@@ -155,12 +158,15 @@ class SuitSplitDateTimeWidget(forms.SplitDateTimeWidget):
         forms.MultiWidget.__init__(self, widgets, attrs)
 
     if django_version < (1, 11):
+
         def format_output(self, rendered_widgets):
             out_tpl = '<div class="datetime">%s %s</div>'
             return mark_safe(out_tpl % (rendered_widgets[0], rendered_widgets[1]))
+
     else:
+
         def render(self, name, value, attrs=None, renderer=None):
-            output = super(SuitSplitDateTimeWidget, self).render(name, value, attrs, renderer)
+            output = super().render(name, value, attrs, renderer)
             return mark_safe('<div class="datetime">%s</div>' % output)
 
 
